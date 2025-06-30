@@ -1,0 +1,16 @@
+https://raw.githubusercontent.com/jaiswalarthi03/MedFlowX/refs/heads/master/screenshot/dashboard_screenshot.png
+https://raw.githubusercontent.com/jaiswalarthi03/MedFlowX/refs/heads/master/screenshot/features_screenshot.png
+https://raw.githubusercontent.com/jaiswalarthi03/MedFlowX/refs/heads/master/screenshot/a
+https://raw.githubusercontent.com/jaiswalarthi03/MedFlowX/refs/heads/master/screenshot/legacy_analytics.png
+https://raw.githubusercontent.com/jaiswalarthi03/MedFlowX/refs/heads/master/screenshot/legacy_patient_detail.png
+https://raw.githubusercontent.com/jaiswalarthi03/MedFlowX/refs/heads/master/screenshot/legacy_upload.png
+https://raw.githubusercontent.com/jaiswalarthi03/MedFlowX/refs/heads/master/screenshot/legacy_dashboard.png
+https://raw.githubusercontent.com/jaiswalarthi03/MedFlowX/refs/heads/master/screenshot/gallery_3.jpg
+https://raw.githubusercontent.com/jaiswalarthi03/MedFlowX/refs/heads/master/screenshot/gallery_2.jpg
+https://raw.githubusercontent.com/jaiswalarthi03/MedFlowX/refs/heads/master/screenshot/gallery_1.jpg
+https://raw.githubusercontent.com/jaiswalarthi03/MedFlowX/refs/heads/master/screenshot/gallery_main.jpg
+https://raw.githubusercontent.com/jaiswalarthi03/MedFlowX/refs/heads/master/screenshot/upload_screen.png
+https://raw.githubusercontent.com/jaiswalarthi03/MedFlowX/refs/heads/master/screenshot/patient_detail_screen.png
+https://raw.githubusercontent.com/jaiswalarthi03/MedFlowX/refs/heads/master/screenshot/analytics_screen.png
+https://raw.githubusercontent.com/jaiswalarthi03/MedFlowX/refs/heads/master/screenshot/dashboard_screen.png
+https://youtu.be/pUN1GpLpGjU 

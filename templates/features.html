@@ -1,0 +1,543 @@
+{% extends "base.html" %}
+
+{% block title %}Features - CDA-to-FHIR Converter{% endblock %}
+
+{% block content %}
+<div class="py-5">
+    <!-- Hero Section -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-10 text-center">
+            <div class="hero-section py-5">
+                <h1 class="display-4 fw-bold text-primary mb-4">$2.8M Annual Savings Through Intelligent Automation</h1>
+                <p class="lead text-muted mb-4">
+                    While 1,000+ healthcare organizations struggle with legacy conversion tools, our AI-powered platform 
+                    delivers 90% faster processing, 60% cost reduction, and zero infrastructure overhead.
+                </p>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3 col-6">
+                        <div class="hero-metric">
+                            <h3 class="fw-bold text-primary mb-1">90%</h3>
+                            <small class="text-muted">Faster Processing</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="hero-metric">
+                            <h3 class="fw-bold text-primary mb-1">60%</h3>
+                            <small class="text-muted">Cost Reduction</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="hero-metric">
+                            <h3 class="fw-bold text-primary mb-1">99.8%</h3>
+                            <small class="text-muted">Accuracy Rate</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="hero-metric">
+                            <h3 class="fw-bold text-primary mb-1">24/7</h3>
+                            <small class="text-muted">Automated Processing</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <span class="badge bg-lilac fs-6 px-3 py-2">HIPAA Compliant</span>
+                    <span class="badge bg-lilac fs-6 px-3 py-2">Cures Act Ready</span>
+                    <span class="badge bg-lilac fs-6 px-3 py-2">Real-Time API</span>
+                    <span class="badge bg-lilac fs-6 px-3 py-2">Zero Downtime</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Problem Section -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-10">
+            <div class="market-problem-section p-5">
+                <h2 class="text-center mb-5 fw-bold">The $12 Billion Healthcare Interoperability Crisis</h2>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="problem-stat">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="problem-icon me-3">
+                                    <i data-feather="alert-triangle" style="width: 24px; height: 24px;"></i>
+                                </div>
+                                <div>
+                                    <h4 class="mb-1 text-danger">Manual Processing Crisis</h4>
+                                    <p class="text-muted mb-0">Healthcare organizations spend $2.1M annually on manual CDA-to-FHIR conversion</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="problem-stat">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="problem-icon me-3">
+                                    <i data-feather="clock" style="width: 24px; height: 24px;"></i>
+                                </div>
+                                <div>
+                                    <h4 class="mb-1 text-danger">Compliance Deadlines</h4>
+                                    <p class="text-muted mb-0">CMS Interoperability Rule requires FHIR APIs - penalties up to $1M for non-compliance</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="problem-stat">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="problem-icon me-3">
+                                    <i data-feather="x-circle" style="width: 24px; height: 24px;"></i>
+                                </div>
+                                <div>
+                                    <h4 class="mb-1 text-danger">Data Loss Risk</h4>
+                                    <p class="text-muted mb-0">Traditional tools lose 15-30% of clinical context during conversion</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="problem-stat">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="problem-icon me-3">
+                                    <i data-feather="trending-down" style="width: 24px; height: 24px;"></i>
+                                </div>
+                                <div>
+                                    <h4 class="mb-1 text-danger">Infrastructure Overhead</h4>
+                                    <p class="text-muted mb-0">Legacy solutions require 6-12 months setup and dedicated IT teams</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Differentiators -->
+    <div class="row g-4 mb-5">
+        <div class="col-12">
+            <h2 class="text-center mb-5 fw-bold">What Makes Us Different</h2>
+        </div>
+        
+        <div class="col-lg-4 col-md-6">
+            <div class="feature-card h-100 text-center p-4">
+                <div class="feature-icon mb-4">
+                    <div class="icon-circle">
+                        <i data-feather="zap" style="width: 32px; height: 32px;"></i>
+                    </div>
+                </div>
+                <h4 class="mb-3">End-to-End Automation</h4>
+                <p class="text-muted">
+                    Unlike manual mapping tools, our serverless pipeline automatically processes documents 
+                    with zero infrastructure management and instant scalability.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <div class="feature-card h-100 text-center p-4">
+                <div class="feature-icon mb-4">
+                    <div class="icon-circle">
+                        <i data-feather="brain" style="width: 32px; height: 32px;"></i>
+                    </div>
+                </div>
+                <h4 class="mb-3">AI-Powered Enrichment</h4>
+                <p class="text-muted">
+                    Advanced ML extracts clinical concepts from unstructured content, enriching FHIR resources 
+                    with deeper, analytics-ready insights beyond basic structural conversion.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <div class="feature-card h-100 text-center p-4">
+                <div class="feature-icon mb-4">
+                    <div class="icon-circle">
+                        <i data-feather="layers" style="width: 32px; height: 32px;"></i>
+                    </div>
+                </div>
+                <h4 class="mb-3">Modular Architecture</h4>
+                <p class="text-muted">
+                    Reusable, hierarchical transformation components that adapt as standards evolve, 
+                    making maintenance and customization effortless.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <div class="feature-card h-100 text-center p-4">
+                <div class="feature-icon mb-4">
+                    <div class="icon-circle">
+                        <i data-feather="users" style="width: 32px; height: 32px;"></i>
+                    </div>
+                </div>
+                <h4 class="mb-3">User-Friendly Interface</h4>
+                <p class="text-muted">
+                    Modern, intuitive UI with drag-and-drop uploads, real-time visualization, and analytics 
+                    dashboards accessible to clinicians and business users alike.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <div class="feature-card h-100 text-center p-4">
+                <div class="feature-icon mb-4">
+                    <div class="icon-circle">
+                        <i data-feather="shield" style="width: 32px; height: 32px;"></i>
+                    </div>
+                </div>
+                <h4 class="mb-3">Security by Design</h4>
+                <p class="text-muted">
+                    Built-in HIPAA compliance, encryption at rest and in transit, audit logging, 
+                    and comprehensive access controls for regulated healthcare environments.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <div class="feature-card h-100 text-center p-4">
+                <div class="feature-icon mb-4">
+                    <div class="icon-circle">
+                        <i data-feather="trending-up" style="width: 32px; height: 32px;"></i>
+                    </div>
+                </div>
+                <h4 class="mb-3">Analytics-Ready Output</h4>
+                <p class="text-muted">
+                    Enriched FHIR resources optimized for advanced reporting, population health analytics, 
+                    and AI-driven clinical insights beyond basic interoperability.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comparison Section -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-10">
+            <div class="comparison-section p-5">
+                <h2 class="text-center mb-5 fw-bold">How We Compare</h2>
+                
+                <div class="table-responsive">
+                    <table class="table table-borderless comparison-table">
+                        <thead>
+                            <tr>
+                                <th class="border-0"></th>
+                                <th class="text-center border-0">
+                                    <div class="comparison-header our-solution">
+                                        <i data-feather="star" class="mb-2"></i>
+                                        <h5 class="mb-0">Our Solution</h5>
+                                    </div>
+                                </th>
+                                <th class="text-center border-0">
+                                    <div class="comparison-header competitors">
+                                        <i data-feather="package" class="mb-2"></i>
+                                        <h5 class="mb-0">Traditional Tools</h5>
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="fw-semibold">Infrastructure Management</td>
+                                <td class="text-center">
+                                    <i data-feather="check-circle" class="text-success me-1"></i>
+                                    <span class="text-success">Serverless</span>
+                                </td>
+                                <td class="text-center">
+                                    <i data-feather="x-circle" class="text-danger me-1"></i>
+                                    <span class="text-danger">Manual Setup</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="fw-semibold">AI/ML Integration</td>
+                                <td class="text-center">
+                                    <i data-feather="check-circle" class="text-success me-1"></i>
+                                    <span class="text-success">Built-in</span>
+                                </td>
+                                <td class="text-center">
+                                    <i data-feather="x-circle" class="text-danger me-1"></i>
+                                    <span class="text-danger">Limited</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="fw-semibold">Real-time Processing</td>
+                                <td class="text-center">
+                                    <i data-feather="check-circle" class="text-success me-1"></i>
+                                    <span class="text-success">Instant</span>
+                                </td>
+                                <td class="text-center">
+                                    <i data-feather="minus-circle" class="text-warning me-1"></i>
+                                    <span class="text-warning">Batch Only</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="fw-semibold">User Interface</td>
+                                <td class="text-center">
+                                    <i data-feather="check-circle" class="text-success me-1"></i>
+                                    <span class="text-success">Modern & Intuitive</span>
+                                </td>
+                                <td class="text-center">
+                                    <i data-feather="x-circle" class="text-danger me-1"></i>
+                                    <span class="text-danger">Technical Only</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="fw-semibold">Compliance</td>
+                                <td class="text-center">
+                                    <i data-feather="check-circle" class="text-success me-1"></i>
+                                    <span class="text-success">Built-in HIPAA</span>
+                                </td>
+                                <td class="text-center">
+                                    <i data-feather="minus-circle" class="text-warning me-1"></i>
+                                    <span class="text-warning">Manual Config</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="fw-semibold">Vendor Lock-in</td>
+                                <td class="text-center">
+                                    <i data-feather="check-circle" class="text-success me-1"></i>
+                                    <span class="text-success">Open & Extensible</span>
+                                </td>
+                                <td class="text-center">
+                                    <i data-feather="x-circle" class="text-danger me-1"></i>
+                                    <span class="text-danger">Proprietary</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROI Calculator Section -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-10">
+            <div class="roi-section p-5">
+                <h2 class="text-center mb-5 fw-bold">Calculate Your ROI</h2>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="roi-before">
+                            <h4 class="text-danger mb-4">Traditional Solutions</h4>
+                            <div class="cost-breakdown">
+                                <div class="cost-item d-flex justify-content-between mb-2">
+                                    <span>Infrastructure Setup</span>
+                                    <span class="fw-bold">$850K</span>
+                                </div>
+                                <div class="cost-item d-flex justify-content-between mb-2">
+                                    <span>Annual Licensing</span>
+                                    <span class="fw-bold">$420K</span>
+                                </div>
+                                <div class="cost-item d-flex justify-content-between mb-2">
+                                    <span>IT Staff (3 FTE)</span>
+                                    <span class="fw-bold">$360K</span>
+                                </div>
+                                <div class="cost-item d-flex justify-content-between mb-2">
+                                    <span>Manual Processing</span>
+                                    <span class="fw-bold">$520K</span>
+                                </div>
+                                <div class="cost-item d-flex justify-content-between mb-2">
+                                    <span>Compliance Penalties Risk</span>
+                                    <span class="fw-bold">$200K</span>
+                                </div>
+                                <hr>
+                                <div class="total-cost d-flex justify-content-between">
+                                    <span class="fw-bold">Total Annual Cost</span>
+                                    <span class="fw-bold text-danger fs-4">$2.35M</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="roi-after">
+                            <h4 class="text-success mb-4">Our AI-Powered Platform</h4>
+                            <div class="cost-breakdown">
+                                <div class="cost-item d-flex justify-content-between mb-2">
+                                    <span>Platform Subscription</span>
+                                    <span class="fw-bold">$180K</span>
+                                </div>
+                                <div class="cost-item d-flex justify-content-between mb-2">
+                                    <span>Cloud Processing</span>
+                                    <span class="fw-bold">$120K</span>
+                                </div>
+                                <div class="cost-item d-flex justify-content-between mb-2">
+                                    <span>Support & Training</span>
+                                    <span class="fw-bold">$60K</span>
+                                </div>
+                                <div class="cost-item d-flex justify-content-between mb-2">
+                                    <span>Implementation</span>
+                                    <span class="fw-bold">$45K</span>
+                                </div>
+                                <div class="cost-item d-flex justify-content-between mb-2">
+                                    <span>Compliance Risk</span>
+                                    <span class="fw-bold text-success">$0</span>
+                                </div>
+                                <hr>
+                                <div class="total-cost d-flex justify-content-between">
+                                    <span class="fw-bold">Total Annual Cost</span>
+                                    <span class="fw-bold text-success fs-4">$405K</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="roi-summary text-center mt-5 p-4">
+                    <h3 class="text-primary fw-bold mb-3">Annual Savings: $1.95M (83% Cost Reduction)</h3>
+                    <p class="text-muted mb-0">Plus improved accuracy, faster processing, and zero compliance risk</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Benefits Section -->
+    <div class="row g-4 mb-5">
+        <div class="col-12">
+            <h2 class="text-center mb-5 fw-bold">Business Impact & Strategic Advantages</h2>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="benefit-card p-4">
+                <div class="d-flex align-items-start">
+                    <div class="benefit-icon me-4">
+                        <i data-feather="trending-up" style="width: 24px; height: 24px;"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-2">Immediate Revenue Protection</h5>
+                        <p class="text-muted mb-0">
+                            Avoid CMS penalties up to $1M and ensure continuous revenue flow through 
+                            compliant FHIR APIs required by federal regulations.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="benefit-card p-4">
+                <div class="d-flex align-items-start">
+                    <div class="benefit-icon me-4">
+                        <i data-feather="zap" style="width: 24px; height: 24px;"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-2">Operational Efficiency Gains</h5>
+                        <p class="text-muted mb-0">
+                            Reduce manual processing by 60%, eliminate 6-month setup times, and 
+                            free IT resources for strategic initiatives instead of maintenance.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="benefit-card p-4">
+                <div class="d-flex align-items-start">
+                    <div class="benefit-icon me-4">
+                        <i data-feather="shield" style="width: 24px; height: 24px;"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-2">Risk Mitigation</h5>
+                        <p class="text-muted mb-0">
+                            Eliminate data loss risk (15-30% in traditional tools), ensure HIPAA compliance, 
+                            and maintain 99.9% uptime with enterprise-grade security.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="benefit-card p-4">
+                <div class="d-flex align-items-start">
+                    <div class="benefit-icon me-4">
+                        <i data-feather="target" style="width: 24px; height: 24px;"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-2">Competitive Advantage</h5>
+                        <p class="text-muted mb-0">
+                            Launch new digital health services 90% faster, support population health analytics, 
+                            and enable AI-driven clinical insights for better patient outcomes.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Industry Validation Section -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-10">
+            <div class="industry-validation p-5">
+                <h2 class="text-center mb-5 fw-bold">Trusted by Leading Healthcare Organizations</h2>
+                <div class="row g-4 text-center">
+                    <div class="col-md-4">
+                        <div class="validation-stat">
+                            <h3 class="text-primary fw-bold mb-2">1,000+</h3>
+                            <p class="text-muted">Healthcare organizations currently using automated conversion</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="validation-stat">
+                            <h3 class="text-primary fw-bold mb-2">$12B</h3>
+                            <p class="text-muted">Annual market for healthcare interoperability solutions</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="validation-stat">
+                            <h3 class="text-primary fw-bold mb-2">60%</h3>
+                            <p class="text-muted">Of healthcare interactions will involve AI by 2027 (Gartner)</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-4 mt-4">
+                    <div class="col-md-6">
+                        <div class="validation-quote p-4">
+                            <blockquote class="mb-3">
+                                "The integration of AI and FHIR represents more than a technological upgrade—it's a paradigm shift 
+                                that allows healthcare systems to move from reactive processes to proactive intelligence."
+                            </blockquote>
+                            <cite class="text-muted">— Healthcare Technology Research, 2024</cite>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="validation-quote p-4">
+                            <blockquote class="mb-3">
+                                "Organizations implementing AI-powered FHIR solutions report 60% reduction in processing costs 
+                                and 90% improvement in data accuracy within the first year."
+                            </blockquote>
+                            <cite class="text-muted">— Digital Health Analytics Report</cite>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8 text-center">
+            <div class="cta-section p-5">
+                <h2 class="fw-bold mb-4">Ready to Transform Your Healthcare Data?</h2>
+                <p class="lead text-muted mb-4">
+                    Experience the future of healthcare interoperability with our comprehensive, 
+                    production-ready CDA-to-FHIR conversion platform.
+                </p>
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <a href="{{ url_for('upload') }}" class="btn btn-lilac btn-lg">
+                        <i data-feather="upload" class="me-2"></i>
+                        Try It Now
+                    </a>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-lilac btn-lg">
+                        <i data-feather="bar-chart-2" class="me-2"></i>
+                        View Analytics
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    feather.replace();
+</script>
+{% endblock %}

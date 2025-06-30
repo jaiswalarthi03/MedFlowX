@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CDA-to-FHIR Converter{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #4A2E52 0%, #6B4470 100%); box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-white" href="{{ url_for('upload') }}">
+                <i data-feather="activity" class="me-2"></i>
+                CDA-to-FHIR Converter
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-white nav-link-custom {% if request.endpoint == 'upload' %}active{% endif %}" 
+                           href="{{ url_for('upload') }}">
+                            <i data-feather="upload" class="me-1"></i>
+                            Upload
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white nav-link-custom {% if request.endpoint == 'dashboard' %}active{% endif %}" 
+                           href="{{ url_for('dashboard') }}">
+                            <i data-feather="bar-chart-2" class="me-1"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white nav-link-custom {% if request.endpoint == 'features' %}active{% endif %}" 
+                           href="{{ url_for('features') }}">
+                            <i data-feather="star" class="me-1"></i>
+                            Features
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white nav-link-custom" href="#" onclick="showSampleCDA(); return false;">
+                            <i data-feather="eye" class="me-1"></i>
+                            Sample CDA
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white nav-link-custom" href="{{ url_for('dashboard') }}">
+                            <i data-feather="bar-chart-2" class="me-1"></i>
+                            Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white nav-link-custom" href="#" onclick="resetData(); return false;">
+                            <i data-feather="refresh-cw" class="me-1"></i>
+                            Reset Data
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white nav-link-custom" href="#" onclick="stopAWSResources(); return false;">
+                            <i data-feather="power" class="me-1"></i>
+                            Stop AWS
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="row mt-3">
+                    <div class="col-12">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Sample CDA Modal -->
+    <div class="modal fade" id="sampleCDAModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header" style="background-color: #C8A8E9;">
+                    <h5 class="modal-title text-white">
+                        <i data-feather="file-text" class="me-2"></i>
+                        Sample CDA Document
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted mb-3">Here's an example of a properly formatted HL7 CDA document structure:</p>
+                    <pre class="bg-light p-3 rounded"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;ClinicalDocument xmlns="urn:hl7-org:v3"&gt;
+  &lt;recordTarget&gt;
+    &lt;patientRole&gt;
+      &lt;id extension="12345" root="2.16.840.1.113883.19.5"/&gt;
+      &lt;patient&gt;
+        &lt;name&gt;
+          &lt;given&gt;John&lt;/given&gt;
+          &lt;family&gt;Doe&lt;/family&gt;
+        &lt;/name&gt;
+        &lt;administrativeGenderCode code="M"/&gt;
+        &lt;birthTime value="19850315"/&gt;
+      &lt;/patient&gt;
+    &lt;/patientRole&gt;
+  &lt;/recordTarget&gt;
+  &lt;component&gt;
+    &lt;structuredBody&gt;
+      &lt;component&gt;
+        &lt;section&gt;
+          &lt;code code="11450-4" displayName="Problem List"/&gt;
+          &lt;entry&gt;
+            &lt;observation&gt;
+              &lt;value code="I25.9" displayName="Coronary artery disease"/&gt;
+            &lt;/observation&gt;
+          &lt;/entry&gt;
+        &lt;/section&gt;
+      &lt;/component&gt;
+    &lt;/structuredBody&gt;
+  &lt;/component&gt;
+&lt;/ClinicalDocument&gt;</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Initialize Feather Icons -->
+    <script>
+        feather.replace();
+        
+        // Global functions for navbar buttons
+        function showSampleCDA() {
+            const modal = new bootstrap.Modal(document.getElementById('sampleCDAModal'));
+            modal.show();
+        }
+        
+        function resetData() {
+            if (!confirm('Are you sure you want to reset all data and clean up AWS resources?')) return;
+            fetch('/api/reset-database', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.success ? 'Data reset and AWS resources cleaned up!' : 'Reset failed: ' + data.error);
+                })
+                .catch(error => {
+                    alert('Reset error: ' + error.message);
+                });
+        }
+        
+        function stopAWSResources() {
+            if (!confirm('⚠️ WARNING: This will delete ALL AWS resources that could incur costs!\n\nThis action cannot be undone. Are you sure you want to continue?')) {
+                return;
+            }
+            
+            fetch('/api/cleanup-aws', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('AWS Services stopped successfully!');
+                } else {
+                    alert('AWS Services stop failed: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('AWS Services stop error: ' + error.message);
+            });
+        }
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

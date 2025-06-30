@@ -1,0 +1,1355 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Dashboard - CDA-to-FHIR Converter{% endblock %}
+
+{% block head %}
+<style>
+/* Aggressive compact dashboard layout */
+.container-fluid.py-4, .container-fluid { padding: 8px !important; }
+.card, .card-body, .card-header { padding: 8px !important; margin-bottom: 8px !important; }
+.card-header { font-size: 1rem !important; }
+.card-body { font-size: 0.95rem !important; }
+.table { font-size: 0.95rem !important; margin-bottom: 0 !important; }
+
+/* Scrollbars for all dashboard sections */
+.card-body, .table-responsive, #patient-journey-list, #recent-activity-list, #medical-insights, #processing-history-table {
+    max-height: 390px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #C8A8E9 #f8f9fa;
+}
+
+/* Increase PII chart height specifically if needed */
+#piiChart {
+    max-height: 390px !important;
+}
+
+/* Thin lilac scrollbars for Webkit browsers */
+.card-body::-webkit-scrollbar, .table-responsive::-webkit-scrollbar, #patient-journey-list::-webkit-scrollbar, #recent-activity-list::-webkit-scrollbar, #medical-insights::-webkit-scrollbar, #processing-history-table::-webkit-scrollbar {
+    width: 6px;
+    background: #f8f9fa;
+}
+.card-body::-webkit-scrollbar-thumb, .table-responsive::-webkit-scrollbar-thumb, #patient-journey-list::-webkit-scrollbar-thumb, #recent-activity-list::-webkit-scrollbar-thumb, #medical-insights::-webkit-scrollbar-thumb, #processing-history-table::-webkit-scrollbar-thumb {
+    background: #C8A8E9;
+    border-radius: 3px;
+}
+
+/* Shrink margins and gaps */
+.row, .col-12, .col-lg-4, .col-lg-8, .col-md-6, .col-xl-3 { margin-bottom: 8px !important; }
+.gap-2 { gap: 4px !important; }
+.mb-4, .mb-3, .mb-0, .mb-1 { margin-bottom: 8px !important; }
+.mt-4, .mt-3, .mt-2, .mt-1 { margin-top: 8px !important; }
+
+/* Table compactness */
+.table th, .table td { padding: 4px 8px !important; }
+
+/* Hide 'No data' messages unless truly empty (handled in JS) */
+.no-data-message { display: none; }
+
+/* Cynthia Voice Assistant Styles */
+#cynthia-avatar:hover {
+  box-shadow: 0 6px 24px rgba(139,90,150,0.25);
+  border-color: #8B5A96;
+}
+.speech-bubble {
+  position: relative;
+}
+.speech-bubble:after {
+  content: '';
+  position: absolute;
+  bottom: -16px;
+  right: 32px;
+  border-width: 12px 12px 0 12px;
+  border-style: solid;
+  border-color: #fff transparent transparent transparent;
+  display: block;
+  width: 0;
+}
+.cynthia-wave {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: rgba(76, 34, 112, 0.12);
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 0.7;
+  pointer-events: none;
+  animation: cynthia-wave-animate 1.6s infinite cubic-bezier(0.4,0.2,0.2,1);
+}
+.cynthia-wave2 { animation-delay: 0.4s; }
+.cynthia-wave3 { animation-delay: 0.8s; }
+@keyframes cynthia-wave-animate {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
+  80% { opacity: 0.2; }
+  100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-1">
+                        <i data-feather="bar-chart-2" class="me-2 text-primary"></i>
+                        Real-Time Analytics Dashboard
+                    </h1>
+                    <p class="text-muted mb-0">Live processing statistics and patient journey insights</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary btn-sm" onclick="refreshDashboard()">
+                        <i data-feather="refresh-cw" class="me-1"></i>
+                        Refresh
+                    </button>
+                    <button class="btn btn-outline-success btn-sm" onclick="exportData()">
+                        <i data-feather="download" class="me-1"></i>
+                        Export
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" onclick="resetDatabase()">
+                        <i data-feather="trash-2" class="me-1"></i>
+                        Reset DB
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Real-Time Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="stats-icon bg-primary bg-opacity-10 rounded-3 p-3">
+                                <i data-feather="file-text" class="text-primary"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Total Documents</h6>
+                            <h3 class="mb-0" id="total-documents">-</h3>
+                            <small class="text-success">
+                                <i data-feather="trending-up" class="me-1"></i>
+                                <span id="documents-trend">0%</span> this week
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="stats-icon bg-success bg-opacity-10 rounded-3 p-3">
+                                <i data-feather="check-circle" class="text-success"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Success Rate</h6>
+                            <h3 class="mb-0" id="success-rate">-</h3>
+                            <small class="text-muted">
+                                <span id="successful-conversions">0</span> successful / <span id="failed-conversions">0</span> failed
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="stats-icon bg-warning bg-opacity-10 rounded-3 p-3">
+                                <i data-feather="clock" class="text-warning"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Avg Processing Time</h6>
+                            <h3 class="mb-0" id="avg-processing-time">-</h3>
+                            <small class="text-muted">seconds per document</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="stats-icon bg-info bg-opacity-10 rounded-3 p-3">
+                                <i data-feather="users" class="text-info"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Unique Patients</h6>
+                            <h3 class="mb-0" id="unique-patients">-</h3>
+                            <small class="text-muted">processed documents</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <!-- Main Content Row -->
+    <div class="row">
+        <!-- Left Column - Charts -->
+            <div class="col-lg-8">
+            <!-- Processing Timeline Chart -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light border-0">
+                    <h5 class="mb-0">
+                        <i data-feather="activity" class="me-2"></i>
+                        Processing Timeline (Real Data)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                    <canvas id="timelineChart" height="100"></canvas>
+                </div>
+            </div>
+
+            <!-- Entity Extraction & FHIR Resources -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-light border-0">
+                            <h6 class="mb-0">
+                                <i data-feather="brain" class="me-2"></i>
+                                Medical Entities Extracted
+                            </h6>
+                    </div>
+                    <div class="card-body">
+                            <canvas id="entitiesChart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-light border-0">
+                            <h6 class="mb-0">
+                                <i data-feather="layers" class="me-2"></i>
+                                FHIR Resources Created
+                            </h6>
+                    </div>
+                    <div class="card-body">
+                            <canvas id="fhirChart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PII Detection Analysis -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light border-0">
+                    <h5 class="mb-0">
+                        <i data-feather="shield" class="me-2"></i>
+                        PII Detection Analysis
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="pii-stats">
+                                <h6>PII Detection Summary</h6>
+                                <div class="row g-3">
+                                    <div class="col-6">
+                                        <div class="pii-stat-card bg-danger bg-opacity-10 p-3 rounded">
+                                            <h4 class="text-danger mb-1" id="total-phi">0</h4>
+                                            <small class="text-muted">Total PII Detected</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="pii-stat-card bg-warning bg-opacity-10 p-3 rounded">
+                                            <h4 class="text-warning mb-1" id="patients-with-phi">0</h4>
+                                            <small class="text-muted">Patients with PII</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <canvas id="piiChart" height="150"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AWS Services Activity Section (packs of 3 per row, OUTSIDE PII card) -->
+            <div class="row mt-4">
+                <div class="col-md-4 mb-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-light border-0">
+                            <h6 class="mb-0"><i data-feather="cloud" class="me-2"></i>API Gateway Activity</h6>
+                        </div>
+                        <div class="card-body" id="api-gateway-logs"></div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-light border-0">
+                            <h6 class="mb-0"><i data-feather="database" class="me-2"></i>S3 Storage Activity</h6>
+                        </div>
+                        <div class="card-body" id="s3-logs"></div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-light border-0">
+                            <h6 class="mb-0"><i data-feather="shuffle" class="me-2"></i>EventBridge Activity</h6>
+                        </div>
+                        <div class="card-body" id="eventbridge-logs"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-light border-0">
+                            <h6 class="mb-0"><i data-feather="repeat" class="me-2"></i>Step Functions Activity</h6>
+                        </div>
+                        <div class="card-body" id="step-functions-logs"></div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-light border-0">
+                            <h6 class="mb-0"><i data-feather="alert-triangle" class="me-2"></i>CloudWatch Alarms</h6>
+                        </div>
+                        <div class="card-body" id="cloudwatch-alarms"></div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-light border-0">
+                            <h6 class="mb-0"><i data-feather="lock" class="me-2"></i>Secrets Manager Activity</h6>
+                        </div>
+                        <div class="card-body" id="secrets-manager-logs"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- End AWS Services Activity Section -->
+        </div>
+
+        <!-- Right Column - Patient Journey & Activity -->
+        <div class="col-lg-4">
+            <!-- Patient Journey Tracker -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light border-0">
+                    <h5 class="mb-0">
+                        <i data-feather="map" class="me-2"></i>
+                        Patient Journey Tracker
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="patient-journey-list">
+                        <!-- Patient journey items will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light border-0">
+                    <h5 class="mb-0">
+                            <i data-feather="clock" class="me-2"></i>
+                            Recent Activity
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="recent-activity-list">
+                            <!-- Recent activity items will be populated here -->
+                        </div>
+                </div>
+            </div>
+
+            <!-- Medical Insights -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0">
+                    <h5 class="mb-0">
+                        <i data-feather="heart" class="me-2"></i>
+                        Medical Insights
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="medical-insights">
+                        <!-- Medical insights will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Processing History Table -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0">
+                    <h5 class="mb-0">
+                        <i data-feather="list" class="me-2"></i>
+                        Processing History
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>File Type</th>
+                                    <th>Processing Mode</th>
+                                    <th>Patient MRN</th>
+                                    <th>Status</th>
+                                    <th>Processing Time</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="processing-history-table">
+                                <!-- Processing history will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cynthia Voice Assistant Widget (Floating, Right, Animated Waves) -->
+<!-- Cynthia widget removed from dashboard.html. Will be added to upload.html instead. -->
+
+<!-- Patient Details Modal -->
+<div class="modal fade" id="patientDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header" style="background-color: #C8A8E9;">
+                <h5 class="modal-title text-white">
+                    <i data-feather="user" class="me-2"></i>
+                    Patient Journey Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="patient-details-content">
+                    <!-- Patient details will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let dashboardData = {};
+let charts = {};
+
+// Initialize dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    loadDashboardData();
+    setInterval(loadDashboardData, 30000); // Refresh every 30 seconds
+});
+
+function loadDashboardData() {
+    fetch('/api/dashboard-data')
+        .then(response => response.json())
+        .then(data => {
+            dashboardData = data;
+            updateDashboard(data);
+        })
+        .catch(error => {
+            console.error('Error loading dashboard data:', error);
+        });
+}
+
+function updateDashboard(data) {
+    // Update stats cards
+    document.getElementById('total-documents').textContent = data.processing_stats.total_documents;
+    document.getElementById('successful-conversions').textContent = data.processing_stats.successful_conversions;
+    document.getElementById('failed-conversions').textContent = data.processing_stats.failed_conversions;
+    document.getElementById('avg-processing-time').textContent = data.processing_stats.processing_time_avg + 's';
+    
+    // Calculate success rate
+    const successRate = data.processing_stats.conversion_success_rate || 0;
+    document.getElementById('success-rate').textContent = successRate + '%';
+    
+    // Update unique patients count
+    const uniquePatients = Object.keys(data.patients || {}).length;
+    document.getElementById('unique-patients').textContent = uniquePatients;
+    
+    // Update PII stats
+    if (data.pii_analysis) {
+        document.getElementById('total-phi').textContent = data.pii_analysis.total_phi || 0;
+        document.getElementById('patients-with-phi').textContent = data.pii_analysis.unique_patients || 0;
+    }
+    
+    // Update charts
+    updateCharts(data);
+    
+    // Update patient journey
+    updatePatientJourney(data);
+    
+    // Update recent activity
+    updateRecentActivity(data.recent_activity);
+    
+    // Update medical insights
+    updateMedicalInsights(data.medical_insights);
+    
+    // Update processing history
+    updateProcessingHistory();
+    
+    // Update API Gateway logs
+    updateAPIGatewayLogs(data.api_gateway_logs);
+    
+    // Update S3 logs
+    updateS3Logs(data.s3_logs);
+    
+    // Update EventBridge logs
+    updateEventBridgeLogs(data.eventbridge_logs);
+    
+    // Update Step Functions logs
+    updateStepFunctionsLogs(data.step_functions_logs);
+    
+    // Update CloudWatch alarms
+    updateCloudWatchAlarms(data.cloudwatch_alarms);
+    
+    // Update Secrets Manager logs
+    updateSecretsManagerLogs(data.secrets_manager_logs);
+}
+
+function updateCharts(data) {
+    // Timeline Chart
+    const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+    if (charts.timeline) charts.timeline.destroy();
+    
+    const timelineData = data.processing_timeline || [];
+    charts.timeline = new Chart(timelineCtx, {
+        type: 'line',
+        data: {
+            labels: timelineData.map(item => item.date),
+            datasets: [{
+                label: 'Documents Processed',
+                data: timelineData.map(item => item.documents),
+                borderColor: '#C8A8E9',
+                backgroundColor: 'rgba(200, 168, 233, 0.1)',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    
+    // Entities Chart
+    const entitiesCtx = document.getElementById('entitiesChart').getContext('2d');
+    if (charts.entities) charts.entities.destroy();
+    
+    const entityData = data.entity_extraction || {};
+    charts.entities = new Chart(entitiesCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Medical Conditions', 'Medications', 'Procedures', 'Lab Results'],
+            datasets: [{
+                data: [
+                    entityData.medical_conditions || 0,
+                    entityData.medications || 0,
+                    entityData.procedures || 0,
+                    entityData.lab_results || 0
+                ],
+                backgroundColor: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+    
+    // FHIR Resources Chart
+    const fhirCtx = document.getElementById('fhirChart').getContext('2d');
+    if (charts.fhir) charts.fhir.destroy();
+    
+    const fhirData = data.fhir_resources || {};
+    charts.fhir = new Chart(fhirCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Patients', 'Observations', 'Conditions', 'Medications', 'Procedures'],
+            datasets: [{
+                label: 'FHIR Resources',
+                data: [
+                    fhirData.patients || 0,
+                    fhirData.observations || 0,
+                    fhirData.conditions || 0,
+                    fhirData.medication_requests || 0,
+                    fhirData.procedures || 0
+                ],
+                backgroundColor: '#C8A8E9'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    
+    // PII Chart
+    if (data.pii_analysis && data.pii_analysis.phi_breakdown) {
+        const piiCtx = document.getElementById('piiChart').getContext('2d');
+        if (charts.pii) charts.pii.destroy();
+        
+        const piiTypes = Object.keys(data.pii_analysis.phi_breakdown);
+        const piiCounts = Object.values(data.pii_analysis.phi_breakdown);
+        
+        charts.pii = new Chart(piiCtx, {
+            type: 'pie',
+            data: {
+                labels: piiTypes,
+                datasets: [{
+                    data: piiCounts,
+                    backgroundColor: ['#FF6B6B', '#FFE66D', '#4ECDC4', '#45B7D1', '#96CEB4']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 12
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
+
+function updatePatientJourney(data) {
+    const journeyList = document.getElementById('patient-journey-list');
+    const patients = data.patients || {};
+    
+    if (Object.keys(patients).length === 0) {
+        journeyList.innerHTML = '<p class="text-muted text-center">No patient data available</p>';
+        return;
+    }
+    
+    let html = '';
+    Object.entries(patients).slice(0, 5).forEach(([patientId, patientData]) => {
+        const phiCount = patientData.phi_detected ? patientData.phi_detected.length : 0;
+        const conditionsCount = (patientData.medical_conditions || patientData.conditions || []).length;
+        const processingCount = patientData.processing_count || 0;
+        
+        html += `
+            <div class="patient-journey-item border-bottom pb-3 mb-3">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="mb-1">Patient ${patientId}</h6>
+                        <small class="text-muted">
+                            Processed ${processingCount} times
+                        </small>
+                    </div>
+                    <button class="btn btn-sm btn-outline-primary" onclick="showPatientDetails('${patientId}')">
+                        <i data-feather="eye" class="me-1"></i>
+                        Details
+                    </button>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-6">
+                        <small class="text-danger">
+                            <i data-feather="shield" class="me-1"></i>
+                            ${phiCount} PII items
+                        </small>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-info">
+                            <i data-feather="heart" class="me-1"></i>
+                            ${conditionsCount} conditions
+                        </small>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    journeyList.innerHTML = html;
+    feather.replace();
+}
+
+function updateRecentActivity(activities) {
+    const activityList = document.getElementById('recent-activity-list');
+    
+    if (!activities || activities.length === 0) {
+        activityList.innerHTML = '<p class="text-muted text-center">No recent activity</p>';
+        return;
+    }
+    
+    let html = '';
+    activities.slice(0, 10).forEach(activity => {
+        const statusIcon = activity.status === 'success' ? 'check-circle' : 'x-circle';
+        const statusColor = activity.status === 'success' ? 'text-success' : 'text-danger';
+        
+        html += `
+            <div class="activity-item d-flex align-items-start mb-3">
+                <div class="flex-shrink-0 me-3">
+                    <i data-feather="${statusIcon}" class="${statusColor}"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="fw-bold small">${activity.action}</div>
+                    <div class="text-muted small">${activity.patient}</div>
+                    <div class="text-muted small">${activity.timestamp}</div>
+                </div>
+            </div>
+        `;
+    });
+    
+    activityList.innerHTML = html;
+    feather.replace();
+}
+
+function updateMedicalInsights(insights) {
+    const insightsDiv = document.getElementById('medical-insights');
+    
+    if (!insights) {
+        insightsDiv.innerHTML = '<p class="text-muted text-center">No medical insights available</p>';
+        return;
+    }
+    
+    let html = `
+        <div class="mb-3">
+            <h6>Top Medical Conditions</h6>
+            <div class="medical-conditions-list">
+    `;
+    
+    if (insights.top_conditions && Array.isArray(insights.top_conditions) && insights.top_conditions.length > 0) {
+        insights.top_conditions.slice(0, 5).forEach(item => {
+            // Handle both array format [condition, count] and object format
+            let condition, count;
+            if (Array.isArray(item)) {
+                [condition, count] = item;
+            } else if (typeof item === 'object') {
+                condition = item.condition || item.name || 'Unknown';
+                count = item.count || 1;
+            } else {
+                condition = String(item);
+                count = 1;
+            }
+            
+            // Ensure condition is a string and not corrupted
+            condition = String(condition).trim();
+            if (condition && condition.length > 0) {
+                html += `
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small">${condition}</span>
+                        <span class="badge bg-primary">${count}</span>
+                    </div>
+                `;
+            }
+        });
+    } else {
+        html += '<p class="text-muted small">No conditions detected</p>';
+    }
+    
+    html += `
+            </div>
+        </div>
+        <div>
+            <h6>Top Medications</h6>
+            <div class="medications-list">
+    `;
+    
+    if (insights.top_medications && Array.isArray(insights.top_medications) && insights.top_medications.length > 0) {
+        insights.top_medications.slice(0, 5).forEach(item => {
+            // Handle both array format [medication, count] and object format
+            let medication, count;
+            if (Array.isArray(item)) {
+                [medication, count] = item;
+            } else if (typeof item === 'object') {
+                medication = item.medication || item.name || 'Unknown';
+                count = item.count || 1;
+            } else {
+                medication = String(item);
+                count = 1;
+            }
+            
+            // Ensure medication is a string and not corrupted
+            medication = String(medication).trim();
+            if (medication && medication.length > 0) {
+                html += `
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small">${medication}</span>
+                        <span class="badge bg-success">${count}</span>
+                    </div>
+                `;
+            }
+        });
+    } else {
+        html += '<p class="text-muted small">No medications detected</p>';
+    }
+    
+    html += `
+            </div>
+        </div>
+    `;
+    
+    insightsDiv.innerHTML = html;
+}
+
+function updateProcessingHistory() {
+    fetch('/api/processing-history?limit=20')
+        .then(response => response.json())
+        .then(history => {
+            const tableBody = document.getElementById('processing-history-table');
+            
+            if (!history || history.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No processing history available</td></tr>';
+                return;
+            }
+            
+            let html = '';
+            history.forEach(record => {
+                const statusBadge = record.success ? 
+                    '<span class="badge bg-success">Success</span>' : 
+                    '<span class="badge bg-danger">Failed</span>';
+                
+                const timestamp = new Date(record.timestamp).toLocaleString();
+                
+                html += `
+                    <tr>
+                        <td>${timestamp}</td>
+                        <td>${record.file_type}</td>
+                        <td>${record.processing_mode}</td>
+                        <td>${record.patient_data?.mrn || 'Unknown'}</td>
+                        <td>${statusBadge}</td>
+                        <td>${record.processing_time || 0}s</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="viewRecordDetails('${record.id}')">
+                                <i data-feather="eye" class="me-1"></i>
+                                View
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tableBody.innerHTML = html;
+            feather.replace();
+        })
+        .catch(error => {
+            console.error('Error loading processing history:', error);
+        });
+}
+
+function showPatientDetails(patientId) {
+    fetch(`/api/patient-details/${patientId}`)
+        .then(response => response.json())
+        .then(patientData => {
+            const modal = new bootstrap.Modal(document.getElementById('patientDetailsModal'));
+            const content = document.getElementById('patient-details-content');
+            
+            let html = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Patient Information</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>MRN:</strong> ${patientId}</li>
+                            <li><strong>First Seen:</strong> ${new Date(patientData.first_seen).toLocaleDateString()}</li>
+                            <li><strong>Processing Count:</strong> ${patientData.processing_count}</li>
+                            <li><strong>Last Processed:</strong> ${patientData.last_processed ? new Date(patientData.last_processed).toLocaleString() : 'Never'}</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>PII Detection</h6>
+                        <div class="phi-list">
+            `;
+            
+            if (patientData.phi_detected && patientData.phi_detected.length > 0) {
+                patientData.phi_detected.forEach(phi => {
+                    html += `
+                        <div class="phi-item bg-danger bg-opacity-10 p-2 rounded mb-2">
+                            <small><strong>${phi.Category}:</strong> ${phi.text}</small>
+                        </div>
+                    `;
+                });
+            } else {
+                html += '<p class="text-muted small">No PII detected</p>';
+            }
+            
+            html += `
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <h6>Medical Conditions</h6>
+                        <div class="conditions-list">
+            `;
+            
+            if (patientData.medical_conditions && patientData.medical_conditions.length > 0) {
+                patientData.medical_conditions.forEach(condition => {
+                    html += `<div class="condition-item bg-info bg-opacity-10 p-2 rounded mb-1"><small>${condition}</small></div>`;
+                });
+            } else {
+                html += '<p class="text-muted small">No conditions detected</p>';
+            }
+            
+            html += `
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Medications</h6>
+                        <div class="medications-list">
+            `;
+            
+            if (patientData.medications && patientData.medications.length > 0) {
+                patientData.medications.forEach(medication => {
+                    html += `<div class="medication-item bg-success bg-opacity-10 p-2 rounded mb-1"><small>${medication}</small></div>`;
+                });
+            } else {
+                html += '<p class="text-muted small">No medications detected</p>';
+            }
+            
+            html += `
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            content.innerHTML = html;
+            modal.show();
+        })
+        .catch(error => {
+            console.error('Error loading patient details:', error);
+        });
+}
+
+function viewRecordDetails(recordId) {
+    // Find the record in the processing history
+    fetch('/api/processing-history?limit=100')
+        .then(response => response.json())
+        .then(history => {
+            const record = history.find(r => r.id === recordId);
+            if (record) {
+                showRecordDetailsModal(record);
+            } else {
+                alert('Record not found');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading record details:', error);
+            alert('Error loading record details');
+        });
+}
+
+function showRecordDetailsModal(record) {
+    // Create modal content
+    let modalContent = `
+        <div class="modal fade" id="recordDetailsModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header" style="background-color: #C8A8E9;">
+                        <h5 class="modal-title text-white">
+                            <i data-feather="file-text" class="me-2"></i>
+                            Processing Record Details
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>File Information</h6>
+                                <ul class="list-unstyled">
+                                    <li><strong>File ID:</strong> ${record.file_id}</li>
+                                    <li><strong>Type:</strong> ${record.file_type}</li>
+                                    <li><strong>Mode:</strong> ${record.processing_mode}</li>
+                                    <li><strong>Timestamp:</strong> ${new Date(record.timestamp).toLocaleString()}</li>
+                                    <li><strong>Processing Time:</strong> ${record.processing_time || 0}s</li>
+                                    <li><strong>Status:</strong> <span class="badge ${record.success ? 'bg-success' : 'bg-danger'}">${record.success ? 'Success' : 'Failed'}</span></li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Patient Information</h6>
+                                ${record.patient_data ? `
+                                    <ul class="list-unstyled">
+                                        <li><strong>MRN:</strong> ${record.patient_data.mrn || 'Unknown'}</li>
+                                        <li><strong>Name:</strong> ${record.patient_data.name || 'Unknown'}</li>
+                                        <li><strong>DOB:</strong> ${record.patient_data.dob || 'Unknown'}</li>
+                                        <li><strong>Gender:</strong> ${record.patient_data.gender || 'Unknown'}</li>
+                                    </ul>
+                                ` : '<p class="text-muted">No patient data available</p>'}
+                            </div>
+                        </div>
+                        
+                        ${record.patient_data && record.patient_data.phi_detected && record.patient_data.phi_detected.length > 0 ? `
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <h6>PII Detected</h6>
+                                    <div class="row">
+                                        ${record.patient_data.phi_detected.map(phi => `
+                                            <div class="col-md-6 mb-2">
+                                                <div class="bg-danger bg-opacity-10 p-2 rounded">
+                                                    <small><strong>${phi.Category}:</strong> ${phi.text}</small>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        ${record.patient_data && record.patient_data.medical_conditions && record.patient_data.medical_conditions.length > 0 ? `
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <h6>Medical Conditions</h6>
+                                    <div class="row">
+                                        ${record.patient_data.medical_conditions.map(condition => `
+                                            <div class="col-md-6 mb-1">
+                                                <div class="bg-info bg-opacity-10 p-2 rounded">
+                                                    <small>${condition}</small>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        ${record.patient_data && record.patient_data.medications && record.patient_data.medications.length > 0 ? `
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <h6>Medications</h6>
+                                    <div class="row">
+                                        ${record.patient_data.medications.map(medication => `
+                                            <div class="col-md-6 mb-1">
+                                                <div class="bg-success bg-opacity-10 p-2 rounded">
+                                                    <small>${medication}</small>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        ${record.status_updates && record.status_updates.length > 0 ? `
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <h6>Processing Steps</h6>
+                                    <div class="timeline">
+                                        ${record.status_updates.map(update => `
+                                            <div class="timeline-item mb-2">
+                                                <div class="d-flex align-items-center">
+                                                    <i data-feather="${update.status.includes('Completed') ? 'check-circle' : update.status.includes('Failed') ? 'x-circle' : 'loader'}" 
+                                                       class="me-2 ${update.status.includes('Completed') || update.status.includes('Failed') ? 'text-success' : 'text-info'}"></i>
+                                                    <div>
+                                                        <strong>${update.step}:</strong> ${update.status}
+                                                        <br><small class="text-muted">${new Date(update.timestamp).toLocaleTimeString()}</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal if any
+    const existingModal = document.getElementById('recordDetailsModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalContent);
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('recordDetailsModal'));
+    modal.show();
+    
+    // Initialize Feather icons
+    feather.replace();
+    
+    // Remove modal from DOM after it's hidden
+    document.getElementById('recordDetailsModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
+    });
+}
+
+function refreshDashboard() {
+    loadDashboardData();
+}
+
+function exportData() {
+    const dataStr = JSON.stringify(dashboardData, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `dashboard-data-${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+}
+
+function resetDatabase() {
+    if (confirm('Are you sure you want to reset the database? This will clear all processing history and analytics data.')) {
+        fetch('/api/reset-database', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Database reset successfully! Refreshing dashboard...');
+                loadDashboardData();
+            } else {
+                alert('Error resetting database: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error resetting database:', error);
+            alert('Error resetting database');
+        });
+    }
+}
+
+function updateAPIGatewayLogs(apiGatewayLogs) {
+    const logsContainer = document.getElementById('api-gateway-logs');
+    if (!logsContainer) return;
+    
+    if (!apiGatewayLogs || apiGatewayLogs.length === 0) {
+        logsContainer.innerHTML = '<p class="text-muted text-center">No API Gateway activity</p>';
+        return;
+    }
+    
+    let html = '';
+    apiGatewayLogs.slice(0, 10).forEach(log => {
+        const statusIcon = log.status === 'COMPLETED' ? 'check-circle' : 
+                          log.status === 'FAILED' ? 'x-circle' : 'loader';
+        const statusColor = log.status === 'COMPLETED' ? 'text-success' : 
+                           log.status === 'FAILED' ? 'text-danger' : 'text-warning';
+        
+        html += `
+            <div class="activity-item d-flex align-items-start mb-3">
+                <div class="flex-shrink-0 me-3">
+                    <i data-feather="${statusIcon}" class="${statusColor}"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="fw-bold small">${log.method} ${log.endpoint}</div>
+                    <div class="text-muted small">${log.status}</div>
+                    <div class="text-muted small">${new Date(log.timestamp).toLocaleString()}</div>
+                </div>
+            </div>
+        `;
+    });
+    
+    logsContainer.innerHTML = html;
+    feather.replace();
+}
+
+function updateS3Logs(s3Logs) {
+    const logsContainer = document.getElementById('s3-logs');
+    if (!logsContainer) return;
+    
+    if (!s3Logs || s3Logs.length === 0) {
+        logsContainer.innerHTML = '<p class="text-muted text-center">No S3 activity</p>';
+        return;
+    }
+    
+    let html = '';
+    s3Logs.slice(0, 10).forEach(log => {
+        const statusIcon = log.status === 'SUCCESS' ? 'check-circle' : 'x-circle';
+        const statusColor = log.status === 'SUCCESS' ? 'text-success' : 'text-danger';
+        
+        html += `
+            <div class="activity-item d-flex align-items-start mb-3">
+                <div class="flex-shrink-0 me-3">
+                    <i data-feather="${statusIcon}" class="${statusColor}"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="fw-bold small">${log.operation} ${log.bucket}</div>
+                    <div class="text-muted small">${log.key || 'N/A'}</div>
+                    <div class="text-muted small">${new Date(log.timestamp).toLocaleString()}</div>
+                </div>
+            </div>
+        `;
+    });
+    
+    logsContainer.innerHTML = html;
+    feather.replace();
+}
+
+function updateEventBridgeLogs(eventbridgeLogs) {
+    const logsContainer = document.getElementById('eventbridge-logs');
+    if (!logsContainer) return;
+    
+    if (!eventbridgeLogs || eventbridgeLogs.length === 0) {
+        logsContainer.innerHTML = '<p class="text-muted text-center">No EventBridge activity</p>';
+        return;
+    }
+    
+    let html = '';
+    eventbridgeLogs.slice(0, 10).forEach(log => {
+        const statusIcon = log.status === 'SUCCESS' ? 'check-circle' : 'x-circle';
+        const statusColor = log.status === 'SUCCESS' ? 'text-success' : 'text-danger';
+        
+        html += `
+            <div class="activity-item d-flex align-items-start mb-3">
+                <div class="flex-shrink-0 me-3">
+                    <i data-feather="${statusIcon}" class="${statusColor}"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="fw-bold small">${log.event_type}</div>
+                    <div class="text-muted small">${log.status}</div>
+                    <div class="text-muted small">${new Date(log.timestamp).toLocaleString()}</div>
+                </div>
+            </div>
+        `;
+    });
+    
+    logsContainer.innerHTML = html;
+    feather.replace();
+}
+
+function updateStepFunctionsLogs(stepFunctionsLogs) {
+    const logsContainer = document.getElementById('step-functions-logs');
+    if (!logsContainer) return;
+    
+    if (!stepFunctionsLogs || stepFunctionsLogs.length === 0) {
+        logsContainer.innerHTML = '<p class="text-muted text-center">No Step Functions activity</p>';
+        return;
+    }
+    
+    let html = '';
+    stepFunctionsLogs.slice(0, 10).forEach(log => {
+        const statusIcon = log.status === 'SUCCEEDED' ? 'check-circle' : 
+                          log.status === 'FAILED' ? 'x-circle' : 'loader';
+        const statusColor = log.status === 'SUCCEEDED' ? 'text-success' : 
+                           log.status === 'FAILED' ? 'text-danger' : 'text-warning';
+        
+        html += `
+            <div class="activity-item d-flex align-items-start mb-3">
+                <div class="flex-shrink-0 me-3">
+                    <i data-feather="${statusIcon}" class="${statusColor}"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="fw-bold small">${log.state_machine_name}</div>
+                    <div class="text-muted small">${log.execution_name}</div>
+                    <div class="text-muted small">${new Date(log.timestamp).toLocaleString()}</div>
+                </div>
+            </div>
+        `;
+    });
+    
+    logsContainer.innerHTML = html;
+    feather.replace();
+}
+
+function updateCloudWatchAlarms(cloudwatchAlarms) {
+    const alarmsContainer = document.getElementById('cloudwatch-alarms');
+    if (!alarmsContainer) return;
+    
+    if (!cloudwatchAlarms || cloudwatchAlarms.length === 0) {
+        alarmsContainer.innerHTML = '<p class="text-muted text-center">No CloudWatch alarms triggered</p>';
+        return;
+    }
+    
+    let html = '';
+    cloudwatchAlarms.slice(0, 10).forEach(alarm => {
+        const statusIcon = alarm.state === 'ALARM' ? 'alert-triangle' : 'check-circle';
+        const statusColor = alarm.state === 'ALARM' ? 'text-danger' : 'text-success';
+        
+        html += `
+            <div class="activity-item d-flex align-items-start mb-3">
+                <div class="flex-shrink-0 me-3">
+                    <i data-feather="${statusIcon}" class="${statusColor}"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="fw-bold small">${alarm.alarm_name}</div>
+                    <div class="text-muted small">${alarm.state}</div>
+                    <div class="text-muted small">${new Date(alarm.timestamp).toLocaleString()}</div>
+                </div>
+            </div>
+        `;
+    });
+    
+    alarmsContainer.innerHTML = html;
+    feather.replace();
+}
+
+function updateSecretsManagerLogs(secretsManagerLogs) {
+    const logsContainer = document.getElementById('secrets-manager-logs');
+    if (!logsContainer) return;
+    
+    if (!secretsManagerLogs || secretsManagerLogs.length === 0) {
+        logsContainer.innerHTML = '<p class="text-muted text-center">No Secrets Manager activity</p>';
+        return;
+    }
+    
+    let html = '';
+    secretsManagerLogs.slice(0, 10).forEach(log => {
+        const statusIcon = log.status === 'SUCCESS' ? 'check-circle' : 'x-circle';
+        const statusColor = log.status === 'SUCCESS' ? 'text-success' : 'text-danger';
+        
+        html += `
+            <div class="activity-item d-flex align-items-start mb-3">
+                <div class="flex-shrink-0 me-3">
+                    <i data-feather="${statusIcon}" class="${statusColor}"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="fw-bold small">${log.operation} ${log.secret_name}</div>
+                    <div class="text-muted small">${log.status}</div>
+                    <div class="text-muted small">${new Date(log.timestamp).toLocaleString()}</div>
+                </div>
+            </div>
+        `;
+    });
+    
+    logsContainer.innerHTML = html;
+    feather.replace();
+}
+
+// Initialize Feather icons
+feather.replace();
+</script>
+{% endblock %}
